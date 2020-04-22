@@ -2,31 +2,29 @@
 
 This project brings together a few Duinotech Modules and some other parts to create a versatile tool. Inspired by the Dew Heaters used on telescopes, it senses ambient temperature and humidity to control a small heater. Not just for telescopes, but anything that needs to avoid condensation.
 
-#### Features include:
-
-* Programmable temperature setpoint
-* Temperature target can be set above ambient or dewpoint
-* Settings can be saved to EEPROM
-* Adjustable failsafe heater output to use if sensors are faulty
-* Comprehensive LCD info screen
+## Features include:
+- Programmable temperature setpoint
+- Temperature target can be set above ambient or dewpoint
+- Settings can be saved to EEPROM
+- Adjustable failsafe heater output to use if sensors are faulty
+- Comprehensive LCD info screen
 
 By making use of as much data as possible, the unit uses no more power than necessary, and can even be run straight from a USB battery pack. It can run a set number of degrees above either dewpoint or ambient temperature. The backlight intensity is also adjustable in code and we've even designed a 3d-printed enclosure that will practically turn it into a professional looking unit.
 
 ## Components
 
-
-|Qty| Code | Description |
-|---|---|---|
-|1 | [XC4520](http://jaycar.com.au/p/XC4520) | Temperature and Humidity module
-|1 | [XC4454](http://jaycar.com.au/p/XC4454) | LCD controller shield
-|1 | [XC4410](http://jaycar.com.au/p/XC4410) | UNO main board
-|1 | [RN3440](http://jaycar.com.au/p/RN3440) | 10K Thermistor
-|1 | [RR0596](http://jaycar.com.au/p/RR0596) | 10K resistor
-|1 | [RR0572](http://jaycar.com.au/p/RR0572) | 1K resistor
-|1 | [ZT2468](http://jaycar.com.au/p/ZT2468) | MOSFET
-|1 | [XC4482](http://jaycar.com.au/p/XC4482) | Proto shield
-|1 | [WC6028](http://jaycar.com.au/p/WC6028) | Plug-socket lead
-|1 | [RR3264](http://jaycar.com.au/p/RR3264) | 5W 390 resistor
+| Qty | Code                                    | Description                     |
+| --- | --------------------------------------- | ------------------------------- |
+| 1   | [XC4520](http://jaycar.com.au/p/XC4520) | Temperature and Humidity module |
+| 1   | [XC4454](http://jaycar.com.au/p/XC4454) | LCD controller shield           |
+| 1   | [XC4410](http://jaycar.com.au/p/XC4410) | UNO main board                  |
+| 1   | [RN3440](http://jaycar.com.au/p/RN3440) | 10K Thermistor                  |
+| 1   | [RR0596](http://jaycar.com.au/p/RR0596) | 10K resistor                    |
+| 1   | [RR0572](http://jaycar.com.au/p/RR0572) | 1K resistor                     |
+| 1   | [ZT2468](http://jaycar.com.au/p/ZT2468) | MOSFET                          |
+| 1   | [XC4482](http://jaycar.com.au/p/XC4482) | Proto shield                    |
+| 1   | [WC6028](http://jaycar.com.au/p/WC6028) | Plug-socket lead                |
+| 1   | [RR3264](http://jaycar.com.au/p/RR3264) | 5W 390 resistor                 |
 
 The 5W resistor is the heater element. For more power, even a RR3254 15Ohm resistor will happily run off most USB ports (up to 500mA), giving about 1.6 Watts. Another option is to run multiple resistors in parallel to distribute the heat better. For more power, a proper telescope heat band should be used. These usually use an RCA plug, so an RCA socket like PS0250 could be fitted. The circuit uses the VIN pin on the Proto Shield, which cannot handle more than about 1A of current.
 
@@ -58,19 +56,19 @@ In the main photo above, the MOSFET's leads are G(gate), D(drain) and S(source),
 
 ## Sketch
 
-The code is quite lengthy and uses four different libraries.  Luckily, only one of these needs to be installed, all the rest come with the  Arduino IDE. The idDHT11 library reads the temperature and humidity sensor and  also calculates the dew point. The file is Telescope_Dew_Heater.ino.
+The code is quite lengthy and uses four different libraries. Luckily, only one of these needs to be installed, all the rest come with the Arduino IDE. The idDHT11 library reads the temperature and humidity sensor and also calculates the dew point. The file is Telescope_Dew_Heater.ino.
 
-Before `setup()`,  we  initialise all the libraries and global variables. There is also a large array  `temps[]` which stores the thermistor temperature conversion. For accuracy, all  temperatures are calculated in tenths of a degree.
+Before `setup()`, we initialise all the libraries and global variables. There is also a large array `temps[]` which stores the thermistor temperature conversion. For accuracy, all temperatures are calculated in tenths of a degree.
 
-In setup, the LCD is initialised and values loaded from  EEPROM. If these are valid, they are loaded into their respective variables.  Because the DHT11 library does its readings in the background, we start a  reading now for when we need one in `loop()`. Then we set the backlight  intensity.
+In setup, the LCD is initialised and values loaded from EEPROM. If these are valid, they are loaded into their respective variables. Because the DHT11 library does its readings in the background, we start a reading now for when we need one in `loop()`. Then we set the backlight intensity.
 
-In `loop()`, the sketch reads all the input, including  thermistor, DHT11 temperature, humidity and dew point and keypad. Then it  responds to the keypad- if left is pressed, the heater works from the dew point  temperature in ‘D’ mode, if the right button is presses, ‘A’ mode works with  ambient temperature. The setpoint for the heater is set by the up and down  buttons between zero and nine degrees. The select button allows the current  settings to be saved in EEPROM. How long the button is held down determines  what the default heater output will be if a sensor failure is detected.
+In `loop()`, the sketch reads all the input, including thermistor, DHT11 temperature, humidity and dew point and keypad. Then it responds to the keypad- if left is pressed, the heater works from the dew point temperature in 'D' mode, if the right button is presses, 'A' mode works with ambient temperature. The setpoint for the heater is set by the up and down buttons between zero and nine degrees. The select button allows the current settings to be saved in EEPROM. How long the button is held down determines what the default heater output will be if a sensor failure is detected.
 
-The temperature target is calculated and the heater output  is adjusted by changing the PWM on pin 11, then the current state is output is  displayed. If an invalid reading is detected in either sensor, a message is  displayed and the heater is set to the default output.
+The temperature target is calculated and the heater output is adjusted by changing the PWM on pin 11, then the current state is output is displayed. If an invalid reading is detected in either sensor, a message is displayed and the heater is set to the default output.
 
-![](images/diagram.jpg)
+![screen diagram](images/diagram.jpg)
 
-In the above image, the ambient temperature is 26 degrees,  but the dewpoint temperature is 11 degrees, so the heater will be aiming for  dewpoint plus six degrees, or 17 degrees. The actual telescope temperature is  26 degrees, so the heater is off. If the heater was switched to ambient mode by  pressing the right button, then the target would be 32 degrees, and the heater  would turn fully on. In normal operation, the thermistor should be near, but  not quite touching the heater resistor, so that it can quickly respond to  changes.
+In the above image, the ambient temperature is 26 degrees, but the dewpoint temperature is 11 degrees, so the heater will be aiming for dewpoint plus six degrees, or 17 degrees. The actual telescope temperature is 26 degrees, so the heater is off. If the heater was switched to ambient mode by pressing the right button, then the target would be 32 degrees, and the heater would turn fully on. In normal operation, the thermistor should be near, but not quite touching the heater resistor, so that it can quickly respond to changes.
 
 ## Improvements
 
