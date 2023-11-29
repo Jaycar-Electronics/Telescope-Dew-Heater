@@ -55,7 +55,16 @@ The MOSFET circuit is the most complex:
 In the main photo above, the MOSFET's leads are G(gate), D(drain) and S(source), looking from top to bottom. The blue and purple wires run off the board to the 39R resistor, while the two white wires feed the 39R resistor from VIN and the MOSFET drain. The 10k resistor on the left ensures that the MOSFET is off unless the Uno is telling it to be on, while the 1k resistor provides a bit of isolation in case the MOSFET fails.
 
 ## Sketch
+You will need to install the Adafruit DHT Sensor Library to make this work.
+The original Jaycar libraries compiled but would never communicate with the DHT sensor correctly. (August 2020).
+The sketch has also been modified to calculate dew point inside the main .ino.
+The dew point formula td = t - ((100 - RH)/5) is one formula used to calculate / estimate dew point.
+https://iridl.ldeo.columbia.edu/dochelp/QA/Basic/dewpoint.html
 
+The final note is, this works. The current JayCar implementation does not.
+
+
+## Original Sketch
 The code is quite lengthy and uses four different libraries. Luckily, only one of these needs to be installed, all the rest come with the Arduino IDE. The idDHT11 library reads the temperature and humidity sensor and also calculates the dew point. The file is Telescope_Dew_Heater.ino.
 
 Before `setup()`, we initialise all the libraries and global variables. There is also a large array `temps[]` which stores the thermistor temperature conversion. For accuracy, all temperatures are calculated in tenths of a degree.

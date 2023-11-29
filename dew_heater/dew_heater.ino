@@ -9,18 +9,23 @@
 #define btnNONE (-1)
 #define MOSFETPIN 11 //n-channel- PWM capable
 #define THERMPIN A1  //10k thermistor and 10k resistor
+#define DHTPIN 3     // Digital pin connected to the DHT sensor
 
-#include "idDHT11.h"
+//#define DHTTYPE DHT11   // DHT 11
+#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
+//#define DHTTYPE DHT21   // DHT 21 (AM2301)
+
+#include "DHT.h"
 
 int idDHT11pin = 3;       //Digital pin for comunications
 int idDHT11intNumber = 1; //interrupt number pin3 uses int.1 on uno
 void dht11_wrapper();     // must be declared before the lib initialization
-idDHT11 DHT11(idDHT11pin, idDHT11intNumber, dht11_wrapper);
+//idDHT11 DHT11(idDHT11pin, idDHT11intNumber, dht11_wrapper);
 
-void dht11_wrapper()
+/*void dht11_wrapper()
 {
   DHT11.isrCallback();
-}
+}*/
 
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7); //for XC4454 LCD Shield LiquidCrystal lcd(RS, E, b4, b5, b6, b7);
@@ -44,12 +49,15 @@ int tempoffset = 5;          //setpoint offset above dewpoint
 byte offsetmode = 'D';       //default to dew point offset
 int ambtemp, ambhum, dptemp; //all measured in 1/10's
 int pwmoutputdefault = 52;   //10%
+DHT dht(DHTPIN, DHTTYPE);
+
 
 void setup()
 {
   Serial.begin(9600); //if needed for debugging
   lcd.begin(16, 2);
   lcd.clear();
+  dht.begin();
   int value = EEPROM.read(OFFSETMODEADDRESS);
   if ((value == 'D') || (value == 'A'))
   { //valid eeprom values found
@@ -64,7 +72,7 @@ void setup()
     lcd.setCursor(0, 0);
     lcd.print("Invalid EEPROM  ");
   }
-  DHT11.acquire(); //start 1st conversion
+  //DHT11.acquire(); //start 1st conversion
   delay(500);      //and wait a bit for conversion to finish
   analogWrite(BACKLIGHTPWMPIN, BACKLIGHTINTENSITY);
 }
@@ -84,17 +92,17 @@ void loop()
     teletemp = 0;
   } //lookup table won't work if index<0
   teletemp = pgm_read_word(&temps[teletemp]);
-
-  if (DHT11.getStatus() == IDDHTLIB_OK)
-  {
-    ambtemp = DHT11.getCelsius() * 10;
-    ambhum = DHT11.getHumidity() * 10;
-    dptemp = DHT11.getDewPointSlow() * 10;
-  }
-  else
-  {
-    thermerror = thermerror | 2;
-  }
+  ambhum = dht.readHumidity()*10;
+  // Read temperature as Celsius (the default)
+  ambtemp = dht.readTemperature()*10;
+//  dp = dht.readDewPoint
+  dptemp = (dht.readTemperature() - (100 - dht.readHumidity()) / 5)*10; 
+  Serial.print(F("Humidity: "));
+  Serial.print(ambhum);
+  Serial.print(F("%  Temperature: "));
+  Serial.print(ambtemp);
+  Serial.print(F("°C "));
+  Serial.print("\r\n");
 
   int key;
   key = read_LCD_buttons();
@@ -192,7 +200,7 @@ void loop()
   lcd.print("+");
   lcd.write((tempoffset) % 10 + '0');
   lcd.print("C");
-  DHT11.acquire(); //start next conversion
+//  DHT11.acquire(); //start next conversion
   delay(500);
 }
 
@@ -224,7 +232,8 @@ int read_LCD_buttons()
 void LCDtopline()
 {
   lcd.print("A:");
-  if (ambtemp > 99)
+  Serial.print(ambtemp);
+  if (ambtemp > 0)
   {
     lcd.write((ambtemp / 100) % 10 + '0');
   }
